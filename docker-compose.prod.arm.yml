@@ -14,13 +14,19 @@ services:
       - MYSQL_USER=${MATOMO_DATABASE_USER}
       - MYSQL_PASSWORD=${MATOMO_DATABASE_PASSWORD}
       - MYSQL_DATABASE=${MATOMO_DATABASE_NAME}
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+            max-file: "5"
+
 
   app:
     image: matomo
     restart: always
     labels:
       - traefik.enable=true
-      - traefik.backend=nginx
+      - traefik.backend=app
       - traefik.frontend.rule=Host:${CONTAINER_DOMAIN}
       - traefik.docker.network=traefik_network
       - traefik.port=${PORT}
@@ -43,6 +49,11 @@ services:
       - mariadb
     networks:
       - traefik_network
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+            max-file: "5"      
     # ports:
     #   - 8080:80
 
