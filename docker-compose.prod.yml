@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  matomo_server:
+    image: bitnami/matomo:latest
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.backend=nginx
+      - traefik.frontend.rule=Host:${CONTAINER_DOMAIN}
+      - traefik.docker.network=traefik_network
+      - traefik.port=${PORT}
+    networks:
+      - matomo_network
+      - traefik_network
+    volumes:
+      - matomo_data:/bitnami
+    environment:
+      - MATOMO_USERNAME=${MATOMO_USERNAME}
+      - MATOMO_PASSWORD=${MATOMO_PASSWORD}
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - MATOMO_DATABASE_HOST=maria_db
+      - MATOMO_DATABASE_USER=${MATOMO_DATABASE_USER}
+      - MATOMO_DATABASE_NAME=${MATOMO_DATABASE_NAME} 
+      - MATOMO_DATABASE_PASSWORD=${MATOMO_DATABASE_PASSWORD}
+    depends_on:
+      - maria_db
+
+  maria_db:
+    image: bitnami/mariadb:latest
+    networks:
+      - matomo_network
+    volumes:
+      - db_data:/bitnami
+    environment:
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=${MATOMO_DATABASE_USER}
+      - MARIADB_DATABASE=${MATOMO_DATABASE_NAME}
+      - MARIADB_PASSWORD=${MATOMO_DATABASE_PASSWORD}
+
+volumes:
+  db_data:
+  matomo_data:
+
+networks:
+  matomo_network:
+  traefik_network:
+    external: true
