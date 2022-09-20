@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  mariadb:
+    image: mariadb
+    command: --max-allowed-packet=64MB
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MATOMO_DATABASE_PASSWORD}
+      - MYSQL_USER=${MATOMO_DATABASE_USER}
+      - MYSQL_PASSWORD=${MATOMO_DATABASE_PASSWORD}
+      - MYSQL_DATABASE=${MATOMO_DATABASE_NAME}
+
+  app:
+    image: matomo
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.backend=nginx
+      - traefik.frontend.rule=Host:${CONTAINER_DOMAIN}
+      - traefik.docker.network=traefik_network
+      - traefik.port=${PORT}
+    volumes:
+      - ./config:/var/www/html/config
+      - ./logs:/var/www/html/logs
+      - matomo:/var/www/html
+    environment:
+      - MATOMO_USERNAME=${MATOMO_USERNAME}
+      - MATOMO_PASSWORD=${MATOMO_PASSWORD}
+      - MATOMO_DATABASE_HOST=mariadb
+      - MATOMO_DATABASE_ADAPTER=mysql
+      - MATOMO_DATABASE_TABLES_PREFIX=matomo_
+      - MATOMO_DATABASE_USERNAME=${MATOMO_DATABASE_USER}
+      - MATOMO_DATABASE_PASSWORD=${MATOMO_DATABASE_PASSWORD}
+      - MATOMO_DATABASE_DBNAME=${MATOMO_DATABASE_NAME}
+    depends_on:
+      - mariadb
+    # ports:
+    #   - 8080:80
+
+volumes:
+  db_data:
+  matomo:
+
+networks:
+  matomo_network:
+  traefik_network:
+    external: true
