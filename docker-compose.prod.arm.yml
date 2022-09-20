@@ -7,13 +7,13 @@ services:
     restart: always
     volumes:
       - db_data:/var/lib/mysql
+    env_file:
+      - .env
     environment:
       - MYSQL_ROOT_PASSWORD=${MATOMO_DATABASE_PASSWORD}
       - MYSQL_USER=${MATOMO_DATABASE_USER}
       - MYSQL_PASSWORD=${MATOMO_DATABASE_PASSWORD}
       - MYSQL_DATABASE=${MATOMO_DATABASE_NAME}
-    networks:
-      - matomo_network
 
   app:
     image: matomo
@@ -37,11 +37,12 @@ services:
       - MATOMO_DATABASE_USERNAME=${MATOMO_DATABASE_USER}
       - MATOMO_DATABASE_PASSWORD=${MATOMO_DATABASE_PASSWORD}
       - MATOMO_DATABASE_DBNAME=${MATOMO_DATABASE_NAME}
+    env_file:
+      - .env
     depends_on:
       - mariadb
     networks:
       - traefik_network
-      - matomo_network
     # ports:
     #   - 8080:80
 
@@ -50,6 +51,5 @@ volumes:
   matomo:
 
 networks:
-  matomo_network:
   traefik_network:
     external: true
